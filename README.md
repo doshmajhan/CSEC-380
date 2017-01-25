@@ -1,2 +1,2 @@
-# CSEC-380
-Programs made for the Principles of Web App Security class
+# CSEC-472
+Programs made for the Authentication and Security Models class
