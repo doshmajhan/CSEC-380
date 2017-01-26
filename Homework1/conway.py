@@ -20,27 +20,39 @@ def clear():
     else:
         os.system('clear')
 
-        
-def setup(size):
+
+def setup(size, pattern):
     """
         Sets up our board of neighbors and the rules of the game
 
         :param size: the dimension of our board to be created
+        :param pattern: the pattern to initialize the board with
         :return board: our populated board ready to be simulated
     """
     board = [[0 for x in range(size)] for y in range(size)]
-    population = random.randint(1, (size*size) - 1) # generate a random number of spaces to populate
-    for i in range(population):
-        # Loop until we've inserted a live cell
-        while True:
-            x = random.randint(0, size - 1)
-            y = random.randint(0, size - 1)
-            # if the location doesn't already have a live cell, insert there
-            if not board[x][y]:
-                board[x][y] = 1
-                break
+
+    if pattern == 'random':
+        population = random.randint(1, (size*size) - 1) # generate a random number of spaces to populate
+        for i in range(population):
+            # Loop until we've inserted a live cell
+            while True:
+                x = random.randint(0, size - 1)
+                y = random.randint(0, size - 1)
+                # if the location doesn't already have a live cell, insert there
+                if not board[x][y]:
+                    board[x][y] = 1
+                    break
+
+    if pattern == 'glider':
+        x = size/2
+        y = size/2
+        positions = [(x, y-1), (x, y+1), (x-1, y+1), (x-2, y)]
+        board[x][y] = 1
+        for n in positions:
+            board[n[0]][n[1]] = 1
 
     return board
+
 
 def print_board(board, size):
     """
@@ -57,6 +69,7 @@ def print_board(board, size):
                 print(' ', end=" ")
         print("\n")
 
+
 def simulate(board, size):
     """
         Begins running the simulation according to the rules of the game
@@ -66,19 +79,24 @@ def simulate(board, size):
     """
     count = 1
     print("Initial")
+    change_list = {}
     print_board(board, size)
     time.sleep(2)
     while True:
         for x in range(size):
             for y in range(size):
-                check_neighbors(board, x, y)
+                result = check_neighbors(board, x, y)
+                change_list[(x, y)] = result
+
+        # update all our changes for the board
+        for key in change_list:
+            board[key[0]][key[1]] = change_list[key]
 
         clear()
         print("Cycle: %d" % count)
         print_board(board, size)
         count += 1
         time.sleep(2)
-
 
 
 def check_neighbors(board, x, y):
@@ -88,35 +106,38 @@ def check_neighbors(board, x, y):
         :param board: the board holding our cell
         :param x: the x position of the cell
         :param y: the y position of the cell
-        :return result: whether the cell will live or die
+        :return result: wether the cell should live or die
     """
     alive = 0
-    dead = 0
+    result = board[x][y]
+    
     # list of possible neighbor locations to check
     neighbors = [(1, 1), (1, 0), (1, -1), (-1, 1), (-1, 0), (-1, -1), (0, 1), (0, -1)]
     for n in neighbors:
-        x = x + n[0]
-        y = y + n[1]
+        temp_x = x + n[0]
+        temp_y = y + n[1]
         # prevent negative array indexing so we don't wrap around
-        if x < 0 or y < 0:
+        if temp_x < 0 or temp_y < 0:
             continue
 
         # try to index, catch error if we over index
         try:
-            if board[x][y]:
+            if board[temp_x][temp_y]:
                 alive += 1
-            else:
-                dead += 1
+
         except IndexError:
             continue
 
     if alive < 2:
-        board[x][y] = 0
-    elif alive > 3:
-        board[x][y] = 0
-    elif board[x][y] == 0 and alive == 3:
-        board[x][y] = 1
+        result = 0
 
+    elif alive > 3:
+        result = 0
+
+    elif board[x][y] == 0 and alive == 3:
+        result = 1
+
+    return result
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Simulates Conway's game of life")
