@@ -7,10 +7,20 @@
 from __future__ import print_function
 import argparse
 import random
+import os
 import sys
 import time
 
+def clear():
+    """
+        Clears the terminal
+    """
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
 
+        
 def setup(size):
     """
         Sets up our board of neighbors and the rules of the game
@@ -44,9 +54,8 @@ def print_board(board, size):
             if board[x][y]:
                 print('+', end=" ")
             else:
-                print('-', end=" ")
+                print(' ', end=" ")
         print("\n")
-
 
 def simulate(board, size):
     """
@@ -58,11 +67,13 @@ def simulate(board, size):
     count = 1
     print("Initial")
     print_board(board, size)
+    time.sleep(2)
     while True:
         for x in range(size):
             for y in range(size):
                 check_neighbors(board, x, y)
 
+        clear()
         print("Cycle: %d" % count)
         print_board(board, size)
         count += 1
@@ -110,10 +121,12 @@ def check_neighbors(board, x, y):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Simulates Conway's game of life")
     parser.add_argument('-s', help='Enter the size of the board, between 5 and 20', dest="dimension", required="True")
+    parser.add_argument('-p', help='The type of pattern to run, glider, small exploder, exploder, 10-row cell, lightweight space ship, and tumbler. Or just random',
+                              dest='pattern', required="True")
     args = parser.parse_args()
     if int(args.dimension) < 5 or int(args.dimension) > 20:
         print("Error: Please enter a size between 5 and 20")
         sys.exit()
 
-    board = setup(int(args.dimension))
+    board = setup(int(args.dimension), args.pattern)
     simulate(board, int(args.dimension))
