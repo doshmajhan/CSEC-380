@@ -47,7 +47,7 @@ def setup(size, pattern):
     if pattern == 'glider':
         board = glider(board, size)
 
-    elif pattern == 'small exploder'
+    elif pattern == 'small exploder':
         board = small_exploder(board, size)
 
     elif pattern == 'exploder':
@@ -90,6 +90,13 @@ def small_exploder(board, size):
         :param size: the dimension of the board
         :return board: the setup 2d array of ints
     """
+    x = size/2
+    y = size/2
+    positions = [(x+1, y), (x-1, y), (x-2, y), (x, y-1),
+                 (x, y+1), (x-1, y-1), (x-1, y+1)]
+    for n in positions:
+        board[n[0]][n[1]] = 1
+
     return board
 
 
@@ -101,6 +108,14 @@ def exploder(board, size):
         :param size: the dimension of the board
         :return board: the setup 2d array of ints
     """
+    x = size/2
+    y = size/2
+    positions = [(x+2, y), (x-2, y), (x, y-2), (x, y+2),
+                 (x-2, y-2), (x-2, y+2), (x+2, y-2), (x+2, y+2),
+                 (x-1, y+2), (x-1, y-2), (x+1, y+2), (x+1, y-2)]
+    for n in positions:
+        board[n[0]][n[1]] = 1
+
     return board
 
 
@@ -112,6 +127,14 @@ def ten_row_cell(board, size):
         :param size: the dimension of the board
         :return board: the setup 2d array of ints
     """
+    x = size/2
+    y = size/2
+    positions = [(x, y-1), (x, y-2), (x, y-3), (x, y-4),
+                 (x, y+1), (x, y+2), (x, y+3), (x, y+4)]
+    board[x][y] = 1
+    for n in positions:
+        board[n[0]][n[1]] = 1
+
     return board
 
 
@@ -175,7 +198,7 @@ def simulate(board, size):
         for key in change_list:
             board[key[0]][key[1]] = change_list[key]
 
-        clear()
+        #clear()
         print("Cycle: %d" % count)
         print_board(board, size)
         count += 1
@@ -224,14 +247,15 @@ def check_neighbors(board, x, y):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Simulates Conway's game of life")
-    parser.add_argument('-s', help='Enter the size of the board, between 5 and 20', dest="dimension", required="True")
+    parser.add_argument('-s', help='Enter the size of the board(atleast 5)', dest="dimension", required="True")
     parser.add_argument('-p', help='The type of pattern to run, glider, small exploder, exploder, 10-row cell, lightweight space ship, and tumbler. Or just random',
                               dest='pattern', required="True")
 
     pattern_list = ['glider', 'small exploder', 'exploder', '10-row cell', 'lightweight space ship', 'tumbler', 'random']
     args = parser.parse_args()
-    if int(args.dimension) < 5 or int(args.dimension) > 20:
-        print("Error: Please enter a size between 5 and 20")
+
+    if int(args.dimension) < 5:
+        print("Error: Please enter a size of atleast 5")
         sys.exit()
 
     if args.pattern not in pattern_list:
