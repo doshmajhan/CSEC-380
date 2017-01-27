@@ -11,6 +11,7 @@ import os
 import sys
 import time
 
+# remove this when done, chaim doesn't like os.system
 def clear():
     """
         Clears the terminal
@@ -44,13 +45,95 @@ def setup(size, pattern):
                     break
 
     if pattern == 'glider':
-        x = size/2
-        y = size/2
-        positions = [(x, y-1), (x, y+1), (x-1, y+1), (x-2, y)]
-        board[x][y] = 1
-        for n in positions:
-            board[n[0]][n[1]] = 1
+        board = glider(board, size)
 
+    elif pattern == 'small exploder'
+        board = small_exploder(board, size)
+
+    elif pattern == 'exploder':
+        board = exploder(board, size)
+
+    elif pattern == '10-row cell':
+        board = ten_row_cell(board, size)
+
+    elif pattern == 'lightweight space ship':
+        board = lightweight_space_ship(board, size)
+
+    elif pattern == 'tumbler':
+        board = tumbler(board, size)
+
+    return board
+
+def glider(board, size):
+    """
+        Function to setup our board for the glider pattern
+
+        :param board: the 2d array of ints board to be set up
+        :param size: the dimension of the board
+        :return board: the setup 2d array of ints
+    """
+    x = size/2
+    y = size/2
+    positions = [(x, y-1), (x, y+1), (x-1, y+1), (x-2, y)]
+    board[x][y] = 1
+    for n in positions:
+        board[n[0]][n[1]] = 1
+
+    return board
+
+
+def small_exploder(board, size):
+    """
+        Function to setup our board for the small exploder pattern
+
+        :param board: the 2d array of ints board to be set up
+        :param size: the dimension of the board
+        :return board: the setup 2d array of ints
+    """
+    return board
+
+
+def exploder(board, size):
+    """
+        Function to setup our board for the exploder pattern
+
+        :param board: the 2d array of ints board to be set up
+        :param size: the dimension of the board
+        :return board: the setup 2d array of ints
+    """
+    return board
+
+
+def ten_row_cell(board, size):
+    """
+        Function to setup our board for the 10-row cell pattern
+
+        :param board: the 2d array of ints board to be set up
+        :param size: the dimension of the board
+        :return board: the setup 2d array of ints
+    """
+    return board
+
+
+def lightweight_space_ship(board, size):
+    """
+        Function to setup our board for the lightweight space ship pattern
+
+        :param board: the 2d array of ints board to be set up
+        :param size: the dimension of the board
+        :return board: the setup 2d array of ints
+    """
+    return board
+
+
+def tumbler(board, size):
+    """
+        Function to setup our board for the tumbler pattern
+
+        :param board: the 2d array of ints board to be set up
+        :param size: the dimension of the board
+        :return board: the setup 2d array of ints
+    """
     return board
 
 
@@ -110,7 +193,7 @@ def check_neighbors(board, x, y):
     """
     alive = 0
     result = board[x][y]
-    
+
     # list of possible neighbor locations to check
     neighbors = [(1, 1), (1, 0), (1, -1), (-1, 1), (-1, 0), (-1, -1), (0, 1), (0, -1)]
     for n in neighbors:
@@ -144,9 +227,15 @@ if __name__ == '__main__':
     parser.add_argument('-s', help='Enter the size of the board, between 5 and 20', dest="dimension", required="True")
     parser.add_argument('-p', help='The type of pattern to run, glider, small exploder, exploder, 10-row cell, lightweight space ship, and tumbler. Or just random',
                               dest='pattern', required="True")
+
+    pattern_list = ['glider', 'small exploder', 'exploder', '10-row cell', 'lightweight space ship', 'tumbler', 'random']
     args = parser.parse_args()
     if int(args.dimension) < 5 or int(args.dimension) > 20:
         print("Error: Please enter a size between 5 and 20")
+        sys.exit()
+
+    if args.pattern not in pattern_list:
+        print("Error: Please enter a pattern type listed")
         sys.exit()
 
     board = setup(int(args.dimension), args.pattern)
