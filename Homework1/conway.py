@@ -11,17 +11,6 @@ import os
 import sys
 import time
 
-# remove this when done, chaim doesn't like os.system
-def clear():
-    """
-        Clears the terminal
-    """
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-
-
 def setup(size, pattern):
     """
         Sets up our board of neighbors and the rules of the game
@@ -63,6 +52,7 @@ def setup(size, pattern):
         board = tumbler(board, size)
 
     return board
+
 
 def glider(board, size):
     """
@@ -146,6 +136,13 @@ def lightweight_space_ship(board, size):
         :param size: the dimension of the board
         :return board: the setup 2d array of ints
     """
+    x = size/2
+    y = size/2
+    positions = [(x-1, y), (x-1, y-1), (x-1, y+1), (x-1, y+2),
+                 (x, y+2), (x, y-2), (x+1, y+2), (x+2, y+1), (x+2, y-2)]
+    for n in positions:
+        board[n[0]][n[1]] = 1
+
     return board
 
 
@@ -157,6 +154,16 @@ def tumbler(board, size):
         :param size: the dimension of the board
         :return board: the setup 2d array of ints
     """
+    x = size/2
+    y = size/2
+    positions = [(x, y-1), (x, y+1), (x-1, y+1), (x-1, y+2), (x-2, y+1),
+                 (x-2, y+2), (x-1, y-1), (x-1, y-2), (x-2, y-1), (x-2, y-2),
+                 (x+1, y-1), (x+1, y+1), (x+2, y-1), (x+2, y+1), (x+3, y-2),
+                 (x+3, y+2), (x+3, y-3), (x+3, y+3), (x+2, y-3), (x+2, y+3),
+                 (x+1, y-3), (x+1, y+3)]
+    for n in positions:
+        board[n[0]][n[1]] = 1
+
     return board
 
 
