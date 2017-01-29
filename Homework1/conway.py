@@ -254,7 +254,7 @@ def check_neighbors(board, x, y):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Simulates Conway's game of life")
-    parser.add_argument('-s', help='Enter the size of the board(atleast 5)', dest="dimension", required="True")
+    parser.add_argument('-s', help='Enter the size of the board(at least 5)', dest="dimension", required="True")
     parser.add_argument('-p', help='The type of pattern to run, glider, small exploder, exploder, 10-row cell, lightweight space ship, and tumbler. Or just random',
                               dest='pattern', required="True")
 
