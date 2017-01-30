@@ -22,16 +22,7 @@ def setup(size, pattern):
     board = [[0 for x in range(size)] for y in range(size)]
 
     if pattern == 'random':
-        population = random.randint(1, (size*size) - 1) # generate a random number of spaces to populate
-        for i in range(population):
-            # Loop until we've inserted a live cell
-            while True:
-                x = random.randint(0, size - 1)
-                y = random.randint(0, size - 1)
-                # if the location doesn't already have a live cell, insert there
-                if not board[x][y]:
-                    board[x][y] = 1
-                    break
+        board = random_pattern(board, size)
 
     if pattern == 'glider':
         board = glider(board, size)
@@ -50,6 +41,28 @@ def setup(size, pattern):
 
     elif pattern == 'tumbler':
         board = tumbler(board, size)
+
+    return board
+
+
+def random_pattern(board, size):
+    """
+        Function to setup our board for a random pattern
+
+        :param board: the 2d array of ints board to be set up
+        :param size: the dimension of the board
+        :return board: the setup 2d array of ints
+    """
+    population = random.randint(1, (size*size) - 1) # generate a random number of spaces to populate
+    for i in range(population):
+        # Loop until we've inserted a live cell
+        while True:
+            x = random.randint(0, size - 1)
+            y = random.randint(0, size - 1)
+            # if the location doesn't already have a live cell, insert there
+            if not board[x][y]:
+                board[x][y] = 1
+                break
 
     return board
 
@@ -251,6 +264,7 @@ def check_neighbors(board, x, y):
         result = 1
 
     return result
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Simulates Conway's game of life")
