@@ -7,7 +7,6 @@ CRLF = "\r\n\r\n"
 def activity1():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
-    #s.send("GET / HTTP/1.1%s Host: %s%s%s" % (CRLF, host, CRLF, CRLF))
     s.send("POST / HTTP/1.1\nHost: %s%s" % (host, CRLF))
     data = s.recv(1000000)
     print data
@@ -17,7 +16,6 @@ def activity1():
 def activity2():
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
-    #s.send("GET / HTTP/1.1%s Host: %s%s%s" % (CRLF, host, CRLF, CRLF))
     s.send("POST /getSecure HTTP/1.1\nHost: %s\nConnection: keep-alive%s"
             % (host, CRLF))
     data = s.recv(1000000)
@@ -38,7 +36,6 @@ def activity2():
 
     s.send(request)
     data = s.recv(1000000)
-    #print data
     s.shutdown(1)
     s.close()
     return data, token
@@ -56,15 +53,12 @@ def activity3(token):
 
     s.send(request)
     data = s.recv(1000000)
-    #print data
     s.shutdown(1)
     s.close()
     index = data.find("solve")
     data = data[index:-1]
     question = data.replace("solve the following: ", "")
-    #print question
     answer = eval(question)
-    #print answer
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
     params += "&solution=%s" % str(answer)
@@ -95,25 +89,19 @@ def activity4(token):
             "%s%s" \
             % (str(len(params)), host, CRLF, params)
 
-    #print request
     s.send(request)
     data = s.recv(1000000)
     s.shutdown(1)
     s.close()
     index = data.find("password")
-    #print data
     data = data[index:]
     password = data.replace("password is ", "")
-    #print password
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
     password = password.replace("&", "%26")
     password = password.replace("=", "%3D")
-    #print password
     params = "token=%s&username=dos&password=%s" % (token, password)
-    #params = params.replace("=", "%3D")
-    #params = params.replace("&", "%26")
     request = "POST /login HTTP/1.1\r\n" \
             "Accept: text/html, application/xhtml+xml, image/jxr, */*\r\n" \
             "Accept-Encoding: gzip, deflate\r\n" \

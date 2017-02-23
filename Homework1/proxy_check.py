@@ -21,9 +21,7 @@ def scan(address):
         print "Site down"
         return None
 
-    ports = [80, 888, 800, 880, 808]
-    for num in range(1000, 10000):
-        ports.append(num)
+    ports = [80, 888, 800, 880, 808, 8080, 8010]
 
     for ip in netaddr.IPNetwork(address):
         print(str(ip))
@@ -35,14 +33,15 @@ def scan(address):
 
             try:
                 test_status = requests.get(target_url, proxies=proxies, timeout=4)
-
+                if test_status.status_code == 200:
+                    print "%s:%s - IS a proxy: %d" % (str(ip), str(port), int(test_status.status_code))
+                    proxy_list += [str(ip) + ":" + str(port)]
+                    print test_status.text
+                    break
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
                 print "%s:%s - not a proxy" % (str(ip), str(port))
 
-            if test_status.status_code == 200:
-                print "%s:%s - IS a proxy: %d" % (str(ip), str(port), int(test_status.status_code))
-                proxy_list += [str(ip) + ":" + str(port)]
-                break
+
 
         return proxy_list
 
