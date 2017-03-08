@@ -8,9 +8,22 @@ from bs4 import BeautifulSoup
 all_links = set()
 all_emails = set() 
 
-def get_data(sock, request):
+
+def get_data(host, request):
+    if "http://" in host or "https://" in host:
+        host = host.replace('http://', '')
+        host = host.replace('https://', '')
+        host = host.replace('/', '')
+        host = host.strip()
+
+    ip = socket.gethostbyname(host)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.settimeout(10)
+    sock.connect((host, 80))
     data = ""
+    print 'connected'
     sock.send(request)
+    print 'sent'
     while True:
         d = sock.recv(1024)
         if not d:
@@ -22,7 +35,7 @@ def get_data(sock, request):
     return data
 
 
-def get_image(num, items, ip):
+def get_image(num, items):
     length = (num*7)+7
     if num == 9:
         length = len(items)
@@ -31,8 +44,6 @@ def get_image(num, items, ip):
     for img in lst:
         name = img.rsplit('/', 1)[-1]
         print 'Downloading: %s' % name
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.connect((ip, 80))
         img = img.replace(" ", "%20")
         request = "GET {} HTTP/1.1\r\n" \
                 "Connection: keep-alive\r\n" \
@@ -40,7 +51,7 @@ def get_image(num, items, ip):
                 "Host: www.rit.edu\r\n" \
                 "Accept: image/jpeg,*/*\r\n\r\n".format("http://www.rit.edu"+img)
 
-        data = get_data(s, request)
+        data = get_data("rit.edu", request)
         data = data.rsplit('\r\n\r\n')
         with open('pics/%s' % name, 'wb') as f:
             f.write(data[1])
@@ -48,16 +59,13 @@ def get_image(num, items, ip):
 
 def activity1():
     url = "https://www.rit.edu/programs/computing-security-bs"
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    ip = socket.gethostbyname("www.rit.edu")
-    s.connect((ip, 80))
     request = "GET {} HTTP/1.1\r\n" \
             "Connection: keep-alive\r\n" \
             "User-Agent: python-requests/2.13.0\r\n" \
             "Host: www.rit.edu\r\n" \
             "Accept: */*\r\n\r\n".format(url)
 
-    data = get_data(s, request)
+    data = get_data("rit.edu", request)
     soup = BeautifulSoup(data, 'lxml')
     all_rows = soup.findAll('tr')
     for row in all_rows:
@@ -77,9 +85,7 @@ def activity1():
         "Host: www.rit.edu\r\n" \
         "Accept: */*\r\n\r\n".format(url)
 
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect((ip, 80))
-    data = get_data(s, request)
+    data = get_data("rit.edu", request)
     
     soup = BeautifulSoup(data, 'lxml')
     divs = soup.findAll('div', {'class': 'staff-picture'})
@@ -90,44 +96,53 @@ def activity1():
 
     threads = []
     for i in range(10):
-        t = threading.Thread(target=get_image, args=(i, pics, ip))
+        t = threading.Thread(target=get_image, args=(i, pics))
         threads.append(t)
         t.start()
 
 
-def activity2(domain, url, depth, f=None):
-    global all_links
-    global all_emails
+def activity2(domain, base, url, depth, f=None):
 
     # we've reached max depth or were out of url scope
     if depth == 0:
         return None
+    if "http" not in url and "https" not in url:
+        new_url = base + url
+    else:
+        new_url = url
+    
+    request = "GET {} HTTP/1.1\r\n" \
+        "Connection: keep-alive\r\n" \
+        "User-Agent: python-requests/2.13.0\r\n" \
+        "Host: {}\r\n" \
+        "Accept: */*\r\n" \
+        "Accept-Encoding: gzip, deflate\r\n\r\n".format(new_url, domain) 
+    
+    print request
+    if domain not in new_url:
+        print "NOT IN DOMAIN => {}".format(new_url)
+        return None
 
     try:
-        r = requests.get(url)
-
-    # may have just gotten a relative path
-    except (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema) as e:
-        url = 'https://www.rit.edu/{}'.format(url)
-        r = requests.get(url)
-        return None
+        data = get_data(domain, request)
 
     except Exception as e:
         print e
         return None
 
-    if domain not in url:
-        print "NOT IN DOMAIN => {}".format(url)
-        return None
-
+    data = data.rsplit('\r\n\r\n')
+    
     if url in all_links:
         return None
-
+    
     all_links.add(url)
     if f:
         f.write('{}\n'.format(url))
+    
+    status = data[0].split("\r\n")[0].split(" ")[1]
+    print '{} -> {} ==> {}'.format(status, new_url, depth)
 
-    soup = BeautifulSoup(r.content, 'lxml')
+    soup = BeautifulSoup(data[1], 'lxml')
     links = soup.findAll('a', href=True)
     emails = soup.select('a[href^=mailto]')
     for e in emails:
@@ -136,8 +151,7 @@ def activity2(domain, url, depth, f=None):
             all_emails.add(e['href'])
 
     for l in links:
-        print '{} -> {} ==> {}'.format(r.status_code, l['href'], depth)
-        activity2(domain, l['href'], depth-1)
+        activity2(domain, base, l['href'], depth-1)
 
 
 def activity3():
@@ -145,16 +159,22 @@ def activity3():
     output = open('link_list.txt', 'a+')
     reader = csv.reader(f)
     for row in reader:
-        activity2(row[1], row[1], 4, f=output)
+        domain = row[1]
+        if "http://" in domain or "https://" in domain:
+            domain = domain.replace('http://', '')
+            domain = domain.replace('https://', '')
+            domain = domain.replace('/', '')
+            domain = domain.strip()
+
+        activity2(domain, row[1].strip(), row[1].strip(), 4, f=output)
 
     f.close()
     output.close()
     print all_links
 
 
-
 if __name__ == '__main__':
-    activity1()
-    #activity2("rit.edu", "https://www.rit.edu/", 4)
-    #activity3()
+    #activity1()
+    #activity2("www.rit.edu", "https://www.rit.edu", "https://www.rit.edu/", 4)
+    activity3()
 
