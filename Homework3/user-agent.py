@@ -1,6 +1,7 @@
 import csv
 import requests
 import socket
+import ssl
 import threading
 from bs4 import BeautifulSoup
 
@@ -8,22 +9,17 @@ from bs4 import BeautifulSoup
 all_links = set()
 all_emails = set() 
 
-
-def get_data(host, request):
-    if "http://" in host or "https://" in host:
-        host = host.replace('http://', '')
-        host = host.replace('https://', '')
-        host = host.replace('/', '')
-        host = host.strip()
-
+def get_data(host, request, https):
     ip = socket.gethostbyname(host)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(10)
-    sock.connect((host, 80))
+    sock.settimeout(4)
+    if https:
+        sock = ssl.wrap_socket(sock)
+        sock.connect((host, 443))
+    else:
+        sock.connect((host, 80))
     data = ""
-    print 'connected'
     sock.send(request)
-    print 'sent'
     while True:
         d = sock.recv(1024)
         if not d:
@@ -51,7 +47,7 @@ def get_image(num, items):
                 "Host: www.rit.edu\r\n" \
                 "Accept: image/jpeg,*/*\r\n\r\n".format("http://www.rit.edu"+img)
 
-        data = get_data("rit.edu", request)
+        data = get_data("rit.edu", request, False)
         data = data.rsplit('\r\n\r\n')
         with open('pics/%s' % name, 'wb') as f:
             f.write(data[1])
@@ -85,7 +81,7 @@ def activity1():
         "Host: www.rit.edu\r\n" \
         "Accept: */*\r\n\r\n".format(url)
 
-    data = get_data("rit.edu", request)
+    data = get_data("rit.edu", request, False)
     
     soup = BeautifulSoup(data, 'lxml')
     divs = soup.findAll('div', {'class': 'staff-picture'})
@@ -101,46 +97,54 @@ def activity1():
         t.start()
 
 
-def activity2(domain, base, url, depth, f=None):
-
+def activity2(domain, base, url, depth, f=None, https=False):
     # we've reached max depth or were out of url scope
     if depth == 0:
         return None
+
     if "http" not in url and "https" not in url:
+        try:
+            if base[-1] == '/':
+                base = base[:-1]
+            if url[0] != '/':
+                base = base + '/'
+        except:
+            pass
+
         new_url = base + url
     else:
         new_url = url
     
     request = "GET {} HTTP/1.1\r\n" \
-        "Connection: keep-alive\r\n" \
+        "Connection: close\r\n" \
         "User-Agent: python-requests/2.13.0\r\n" \
         "Host: {}\r\n" \
-        "Accept: */*\r\n" \
-        "Accept-Encoding: gzip, deflate\r\n\r\n".format(new_url, domain) 
+        "Accept: */*\r\n\r\n".format(new_url, domain) 
     
-    print request
     if domain not in new_url:
-        print "NOT IN DOMAIN => {}".format(new_url)
+        #print "URL {} NOT IN DOMAIN {}".format(new_url, domain)
         return None
-
+    
     try:
-        data = get_data(domain, request)
+        data = get_data(domain, request, https)
 
     except Exception as e:
         print e
         return None
 
-    data = data.rsplit('\r\n\r\n')
-    
-    if url in all_links:
-        return None
-    
+    data = data.split('\r\n\r\n', 1)
     all_links.add(url)
-    if f:
+    if f:    
         f.write('{}\n'.format(url))
     
-    status = data[0].split("\r\n")[0].split(" ")[1]
-    print '{} -> {} ==> {}'.format(status, new_url, depth)
+    try:
+        status = data[0].split("\r\n")[0].split(" ")[1]
+        print '{} -> {} ==> {}'.format(status, new_url, depth)
+    except Exception as e:
+        print "Error: {}".format(str(e))
+    
+    if len(data) != 2:
+        return None
 
     soup = BeautifulSoup(data[1], 'lxml')
     links = soup.findAll('a', href=True)
@@ -151,7 +155,11 @@ def activity2(domain, base, url, depth, f=None):
             all_emails.add(e['href'])
 
     for l in links:
-        activity2(domain, base, l['href'], depth-1)
+        if l['href'] in all_links:
+            #print "Already have -> {}".format(url)
+            continue
+
+        activity2(domain, base, l['href'], depth-1, f=f, https=https)
 
 
 def activity3():
@@ -160,21 +168,59 @@ def activity3():
     reader = csv.reader(f)
     for row in reader:
         domain = row[1]
-        if "http://" in domain or "https://" in domain:
-            domain = domain.replace('http://', '')
-            domain = domain.replace('https://', '')
-            domain = domain.replace('/', '')
-            domain = domain.strip()
-
-        activity2(domain, row[1].strip(), row[1].strip(), 4, f=output)
+        
+        if "https" in domain:
+            https = True
+        else:
+            https = False
+        
+        domain = domain.replace('http://', '')
+        domain = domain.replace('https://', '')
+        domain = domain.replace('www.', '')
+        domain = domain.replace('/', '')
+        domain = domain.strip()
+       
+        activity2(domain, row[1].strip(), row[1].strip(), 4, f=output, https=https)
 
     f.close()
     output.close()
     print all_links
 
 
+def activity4():
+    f = open('dir.list', 'r+')
+    output = open('found_dirs.txt', 'a+')
+    domain = '52.23.205.104'
+    for line in f:
+        line = line.replace("http://", "")
+        line = line.replace("https://", "")
+        paths = line.strip().split('/')
+        for p in paths:
+            if p == '':
+                continue
+            if p[0] == '?':
+                continue
+
+            url = "http://{}/{}".format(domain, p)
+            request = "GET {} HTTP/1.1\r\n" \
+                "Connection: close\r\n" \
+                "User-Agent: python-requests/2.13.0\r\n" \
+                "Host: {}\r\n" \
+                "Accept: */*\r\n\r\n".format(url, domain) 
+            
+            data = get_data(domain, request, False)
+            if "404" in data:
+                print "404 => {}".format(url)
+            else:
+                print "200 FOUND URL => {}".format(url)
+                output.write("{}\n".format(url))
+
+    f.close()
+    output.close()
+
 if __name__ == '__main__':
     #activity1()
     #activity2("www.rit.edu", "https://www.rit.edu", "https://www.rit.edu/", 4)
-    activity3()
+    #activity3()
+    activity4()
 
