@@ -56,12 +56,12 @@ def get_image(num, items):
 def activity1():
     url = "https://www.rit.edu/programs/computing-security-bs"
     request = "GET {} HTTP/1.1\r\n" \
-            "Connection: keep-alive\r\n" \
+            "Connection: close\r\n" \
             "User-Agent: python-requests/2.13.0\r\n" \
             "Host: www.rit.edu\r\n" \
             "Accept: */*\r\n\r\n".format(url)
 
-    data = get_data("rit.edu", request)
+    data = get_data("rit.edu", request, True)
     soup = BeautifulSoup(data, 'lxml')
     all_rows = soup.findAll('tr')
     for row in all_rows:
@@ -72,16 +72,16 @@ def activity1():
             if td1 == u'\xa0':
                 continue
 
-            #print td1, td2
+            print td1, td2
 
     url = "https://www.rit.edu/gccis/computingsecurity/people"
     request = "GET {} HTTP/1.1\r\n" \
         "Connection: keep-alive\r\n" \
         "User-Agent: python-requests/2.13.0\r\n" \
-        "Host: www.rit.edu\r\n" \
+        "Host: rit.edu\r\n" \
         "Accept: */*\r\n\r\n".format(url)
 
-    data = get_data("rit.edu", request, False)
+    data = get_data("rit.edu", request, True)
     
     soup = BeautifulSoup(data, 'lxml')
     divs = soup.findAll('div', {'class': 'staff-picture'})
@@ -151,7 +151,7 @@ def activity2(domain, base, url, depth, f=None, https=False):
     emails = soup.select('a[href^=mailto]')
     for e in emails:
         if e['href'] not in all_emails:
-            #print "EMAIL -> {}".format(e['href'])
+            print "EMAIL -> {}".format(e['href'])
             all_emails.add(e['href'])
 
     for l in links:
@@ -188,7 +188,7 @@ def activity3():
 
 
 def activity4():
-    f = open('dir.list', 'r+')
+    f = open('link_list.txt', 'r+')
     output = open('found_dirs.txt', 'a+')
     domain = '52.23.205.104'
     for line in f:
@@ -220,7 +220,8 @@ def activity4():
 
 if __name__ == '__main__':
     #activity1()
-    #activity2("www.rit.edu", "https://www.rit.edu", "https://www.rit.edu/", 4)
+    #activity2("csec.rit.edu", "https://csec.rit.edu", "https://csec.rit.edu/", 1)
+    #print(all_emails)
     #activity3()
     activity4()
 
