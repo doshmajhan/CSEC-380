@@ -7,7 +7,8 @@ if($has_session){
 	if (!isset($_SESSION['login']) or !isset($_SESSION['user_id'])){
 		session_regenerate_id(true);
 		session_destroy();
-		die("<script>window.location.href = '/armbook/index.php';</script>Invalid Session");
+		die("Invalid Session");
+		header('Location: https://54.162.112.219/armbook/index.php');
 	}
 	if($_SERVER['REMOTE_ADDR'] !== $_SESSION['login']['ip']){
 		$destroy = true;
@@ -24,17 +25,13 @@ if($has_session){
 	// Reset our counter
 	$_SESSION['login']['born'] = time();
 	$id_to_get = $_SESSION['user_id'];
-	if(isset($_GET['id'])){
-		$id_to_get = $_GET['id'];
-	}
-	
-	if(isset($_GET['comment'])){
-		$maxLength = 300;
-		$comment = $_GET['comment'];
-		$comment = substr ($comment,0,$maxLength);
-		if($stmt = $mysqli->prepare("INSERT INTO posts (user_id_from, user_id_to, text)
-VALUES (?, ?, ?)")){
-			if($stmt->bind_param("iis", $_SESSION['user_id'], $id_to_get, $comment)){
+	print_r($_POST);
+	if(isset($_POST['name']) and isset($_POST['value'])){
+		if($_POST['name'] == "school"){
+			$prep = "UPDATE info SET School=? WHERE user_id=?";
+		}
+		if($stmt = $mysqli->prepare($prep)){
+			if($stmt->bind_param("si",$_POST['value'], $_SESSION['user_id'])){
 				if(!$stmt->execute()){
 					die("Error - Issue executing prepared statement: " . mysqli_error($mysqli));
 				}
@@ -42,17 +39,16 @@ VALUES (?, ?, ?)")){
 				die("Error - Issue binding prepared statement: " . mysqli_error($mysqli));
 			}
 			if($stmt->close()){
-				echo "Added Comment";
+				echo "Value updated succesfully";
 			}else{
 				die("Error - Failed to close prepared statement" . mysqli_error($mysqli));
 			}
 		}else{
 			die("Error - Issue preparing statement: " . mysqli_error($mysqli));
-		}					
-
-	}else{
-		die("There was an issue contact your administrator");
+		}
 	}
+		
+
 
 }
 ?>	

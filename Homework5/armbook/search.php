@@ -7,7 +7,8 @@ if($has_session){
 	if (!isset($_SESSION['login']) or !isset($_SESSION['user_id'])){
 		session_regenerate_id(true);
 		session_destroy();
-		die("<script>window.location.href = '/armbook/index.php';</script>Invalid Session");
+		die("Invalid Session");
+		header('Location: https://54.162.112.219/armbook/index.php');
 	}
 	if($_SERVER['REMOTE_ADDR'] !== $_SESSION['login']['ip']){
 		$destroy = true;
@@ -66,8 +67,8 @@ if($has_session){
 }
 ?>
 	<link rel="stylesheet" type="text/css" href="background2.css" />
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+	<script src="js/jquery.min.js"></script>
 	<script type="text/javascript" src="js/jquery.mousewheel-3.0.6.pack.js"></script>
 	<!-- Add fancyBox -->
 	<script type="text/javascript" src="js/source/jquery.fancybox.js?v=2.1.5"></script>
@@ -77,40 +78,8 @@ if($has_session){
 	<link rel="stylesheet" type="text/css" href="js/source/helpers/jquery.fancybox-thumbs.css?v=1.0.7" />
 	<script type="text/javascript" src="js/source/helpers/jquery.fancybox-thumbs.js?v=1.0.7"></script>
 	<script type="text/javascript" src="js/source/helpers/jquery.fancybox-media.js?v=1.0.6"></script>	
-	<script>
-	$( document ).ready(function() {
-		$('.fancybox').fancybox();
-		
-		$('#search').keypress(function (e) {
-		  if (e.which == 13) {
-			$('#search_form').submit();
-			return false;
-		  }
-		});		
-		$.get( "timeline.php?id=<?php echo $id_to_get; ?>", function( data ) {
-		  $( "#botcont" ).html( data );
-		});		
-	
-		$( "#friends" ).click(function() {
-			$.get( "friends.php?id=<?php echo $id_to_get; ?>", function( data ) {
-			  $( "#botcont" ).html( data );
-			  event.preventDefault();
-			});
-		});
-		$( "#add_friend" ).click(function() {
-			$.get( "add_friend.php?id=<?php echo $id_to_get; ?>", function( data ) {
-			  event.preventDefault();
-			});
-			location.reload();
-		});
-		$( "#del_friend" ).click(function() {
-			$.get( "del_friend.php?id=<?php echo $id_to_get; ?>", function( data ) {	
-			  event.preventDefault();
-			});
-			location.reload();
-		});		
-	});
-	</script>
+	<script src="js/search.js"></script>
+	<?php echo '<div id="id" class="' . $id_to_get . '"></div>' ?>
 	<div id="bluebar">
 		<div id="logo"><a href="home.php"><img id="logo_img" src="images/logo.png"></a></div>
 		<div id="search_div">

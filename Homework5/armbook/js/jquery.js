@@ -346,7 +346,7 @@ jQuery.extend( {
 			// We use an anonymous function so that context is window
 			// rather than jQuery in Firefox
 			( window.execScript || function( data ) {
-				window[ "eval" ].call( window, data ); // jscs:ignore requireDotNotation
+				//window.eval.call( window, data ); // jscs:ignore requireDotNotation
 			} )( data );
 		}
 	},

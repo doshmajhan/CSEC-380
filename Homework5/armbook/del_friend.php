@@ -7,7 +7,8 @@ if($has_session){
 	if (!isset($_SESSION['login']) or !isset($_SESSION['user_id'])){
 		session_regenerate_id(true);
 		session_destroy();
-		die("<script>window.location.href = '/armbook/index.php';</script>Invalid Session");
+		die("Invalid Session");
+		header('Location: https://54.162.112.219/armbook/index.php');
 	}
 	if($_SERVER['REMOTE_ADDR'] !== $_SESSION['login']['ip']){
 		$destroy = true;
@@ -59,12 +60,20 @@ if($has_session){
 		die("There was an issue contact your administrator");
 	}
 	$friends = explode(',',$friends);
-	// If it's already in the array
-	if(array_search($id_to_get,$friends)){
+	// If we can't find the element in our friends array
+	if(!array_search($id_to_get,$friends)){
 		die("There was an issue contact your administrator");
-	}	
-	array_push($friends,$id_to_get);
-	$ids = implode(',',$friends);
+	}
+	// Iterate over the array looking for the value
+	$new_friends = array();
+	foreach ($friends as &$value) {
+		// If its not the one we're deleting push it
+		if($value != $id_to_get){
+			array_push($new_friends, $value);
+		}
+	}
+
+	$ids = implode(',',$new_friends);
 	if($stmt = $mysqli->prepare("UPDATE profiles SET Friends=? WHERE user_id=?")){
 		if($stmt->bind_param("si", $ids, $_SESSION['user_id'])){
 			if(!$stmt->execute()){
@@ -74,7 +83,7 @@ if($has_session){
 			die("Error - Issue binding prepared statement: " . mysqli_error($mysqli));
 		}
 		if($stmt->close()){
-			echo "True - Friend Added Successfully";
+			echo "True - Friend Removed Successfully";
 		}else{
 			die("Error - Failed to close prepared statement" . mysqli_error($mysqli));
 		}

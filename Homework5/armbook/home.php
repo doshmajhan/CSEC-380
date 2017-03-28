@@ -7,7 +7,8 @@ if($has_session){
 	if (!isset($_SESSION['login']) or !isset($_SESSION['user_id'])){
 		session_regenerate_id(true);
 		session_destroy();
-		die("<script>window.location.href = '/armbook/index.php';</script>Invalid Session");
+		die("Invalid Session");
+		header('Location: https://54.162.112.219/armbook/index.php');
 	}
 	if($_SERVER['REMOTE_ADDR'] !== $_SESSION['login']['ip']){
 		$destroy = true;
@@ -30,6 +31,7 @@ if($has_session){
 	}	
 	// Get Data
 	if($stmt = $mysqli->prepare("SELECT * from info where user_id=?")){
+		echo $_SESSION['user_id'];
 		if($stmt->bind_param("i", $_SESSION['user_id'])){
 			if(!$stmt->execute()){
 				die("Error - Issue executing prepared statement: " . mysqli_error($mysqli));
@@ -142,7 +144,7 @@ if($has_session){
 }
 ?>
 	<link rel="stylesheet" type="text/css" href="background2.css" />
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+	<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
 	<script src="js/jquery.js"></script>
 	<script type="text/javascript" src="js/jquery.mousewheel-3.0.6.pack.js"></script>
 	<!-- Add fancyBox -->
@@ -156,41 +158,10 @@ if($has_session){
 	<script src="js/jquery-ui-1.10.1.custom.min.js"></script>
 	<link href="js/jquery-ui-1.10.1.custom.css" rel="stylesheet"/>
 <link href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/css/jqueryui-editable.css" rel="stylesheet"/>
-<script src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/jqueryui-editable/js/jqueryui-editable.min.js"></script>
-	<script>
-	$( document ).ready(function() {
-		$('.fancybox').fancybox();
-		
-		$('#search').keypress(function (e) {
-		  if (e.which == 13) {
-			$('#search_form').submit();
-			return false;
-		  }
-		});		
-		$.get( "timeline.php?id=<?php echo $id_to_get; ?>", function( data ) {
-		  $( "#botcont" ).html( data );
-		});		
-	
-		$( "#friends" ).click(function() {
-			$.get( "friends.php?id=<?php echo $id_to_get; ?>", function( data ) {
-			  $( "#botcont" ).html( data );
-			  event.preventDefault();
-			});
-		});
-		$( "#add_friend" ).click(function() {
-			$.get( "add_friend.php?id=<?php echo $id_to_get; ?>", function( data ) {
-			  event.preventDefault();
-			});
-			location.reload();
-		});
-		$( "#del_friend" ).click(function() {
-			$.get( "del_friend.php?id=<?php echo $id_to_get; ?>", function( data ) {	
-			  event.preventDefault();
-			});
-			location.reload();
-		});		
-	});
-	</script>
+<script src="js/jqueryui-editable.min.js"></script>
+<script src="js/home.js"></script>
+
+<?php echo '<div id="id" class="'. $id_to_get .'"></div>' ?>
 	<div id="bluebar">
 		<div id="logo"><a href="home.php"><img id="logo_img" src="images/logo.png"></a></div>
 		<div id="search_div">
@@ -209,25 +180,7 @@ if($has_session){
 				<a class="fancybox" href="<?php echo $profPic; ?>"><img align="left" class="fb-image-profile" src="<?php echo $profPic; ?>" width="180" height="180"/></a>
 				<?php
 				if($_SESSION['user_id'] == $id_to_get){
-					echo '
-						<script>
-						$( document ).ready(function() {
-							$( "#update_prof" ).submit(function( event ) {
-								if($("#url").val() == ""){
-									$("#update").html("Please insert a value");
-								}else{
-									$.get( "change_photo.php?type=profile&url=" + $("#url").val(), function( data ) {
-										$("#update").html(data);
-										if(data.indexOf("successfully") >= 0){
-											location.reload();
-										}
-									});
-								}
-								event.preventDefault();
-							});
-						});
-						</script>
-					';
+					echo '<script src="js/update.js"></script>';
 					echo '<a class="fancybox" href="#change_profile"><img id="edit" src="images/edit.png"></a>';
 					echo '<div id="change_profile" style="height:150px;width:400px;display: none;">
 						<h3>Change your Profile Picture</h3>
@@ -270,7 +223,7 @@ if($has_session){
 				</div>
 				<div id="nav"><div id="navcont">
 				<a class="links" id="timeline" href="home.php">Home<span></span></a>
-				<a class="links" id="friends" href="#"">Friends<span></a>
+				<a class="links" id="friends" href="#">Friends<span></a>
 				<a class="links" href="#">Photos<span></span></a>
 				</div></div>
 				<!--<div class="fb-profile-text">
