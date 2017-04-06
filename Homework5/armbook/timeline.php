@@ -7,7 +7,8 @@ if($has_session){
 	if (!isset($_SESSION['login']) or !isset($_SESSION['user_id'])){
 		session_regenerate_id(true);
 		session_destroy();
-		die("<script>window.location.href = '/armbook/index.php';</script>Invalid Session");
+		die("Invalid Session");
+		header('Location: https://54.162.112.219/armbook/index.php');
 	}
 	if($_SERVER['REMOTE_ADDR'] !== $_SESSION['login']['ip']){
 		$destroy = true;
@@ -145,25 +146,6 @@ if($has_session){
 	
 }
 ?>
-	
-		<script>
-		$( document ).ready(function() {
-			var f = 'jqueryui';
-			//toggle `popup` / `inline` mode
-			$.fn.editable.defaults.mode = 'popup';     
-			//make username editable
-			$('#school').editable();			
-			$('#statUpdate').keypress(function (e) {
-			  if (e.which == 13) {
-				$.get( "add_comment.php?id=<?php echo $id_to_get; ?>&comment="+$('#statUpdate').val(), function( data ) {
-					location.reload();
-				});	
-				return false;
-				
-			  }
-			});
-		});
-		</script>
 
 			<div id="left">
 				<div id="top_about"><a id="about" href="home.php">About</a></div>

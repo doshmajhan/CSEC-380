@@ -1,4 +1,5 @@
-<?php 
+<?php
+require 'vendor/autoload.php';
 include_once("common.php");
 session_start();
 $has_session = session_status() == PHP_SESSION_ACTIVE;
@@ -9,6 +10,10 @@ if($has_session){
 		session_destroy();
 		die("<script>window.location.href = '/armbook/index.php';</script>Invalid Session");
 	}
+
+	$_SESSION['token'] = bin2hex(random_bytes(32));
+	$token = $_SESSIONS['token'];
+
 	if($_SERVER['REMOTE_ADDR'] !== $_SESSION['login']['ip']){
 		$destroy = true;
 	}
@@ -23,6 +28,7 @@ if($has_session){
 	}
 	// Reset our counter
 	$_SESSION['login']['born'] = time();	
+	$token = $_SESSIONS['token'];
 
 	$id_to_get = $_SESSION['user_id'];
 	if(isset($_GET['id'])){
@@ -178,7 +184,7 @@ if($has_session){
 			});
 		});
 		$( "#add_friend" ).click(function() {
-			$.get( "add_friend.php?id=<?php echo $id_to_get; ?>", function( data ) {
+			$.get( "add_friend.php?id=<?php echo $id_to_get; ?>&token=<?php echo $_SESSION['token']; ?>", function( data ) {
 			  event.preventDefault();
 			});
 			location.reload();
@@ -284,4 +290,3 @@ if($has_session){
 				
 			</div>
 	</div>
-

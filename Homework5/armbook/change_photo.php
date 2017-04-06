@@ -7,7 +7,8 @@ if($has_session){
 	if (!isset($_SESSION['login']) or !isset($_SESSION['user_id'])){
 		session_regenerate_id(true);
 		session_destroy();
-		die("<script>window.location.href = '/armbook/index.php';</script>Invalid Session");
+		die("Invalid Session");
+		header('Location: https://54.162.112.219/armbook/index.php');
 	}
 	if($_SERVER['REMOTE_ADDR'] !== $_SESSION['login']['ip']){
 		$destroy = true;

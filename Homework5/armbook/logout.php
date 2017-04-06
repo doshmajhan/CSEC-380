@@ -16,5 +16,5 @@
 session_start();
 session_destroy();
 
-echo "<script>window.location.href = '/armbook/index.php';</script>";
+header('Location: https://54.162.112.219/armbook/index.php');
 ?>

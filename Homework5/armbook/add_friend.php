@@ -7,7 +7,8 @@ if($has_session){
 	if (!isset($_SESSION['login']) or !isset($_SESSION['user_id'])){
 		session_regenerate_id(true);
 		session_destroy();
-		die("<script>window.location.href = '/armbook/index.php';</script>Invalid Session");
+		die("Invalid Session");
+		header('Location: htts://54.162.112.219/armbook/index.php');
 	}
 	if($_SERVER['REMOTE_ADDR'] !== $_SESSION['login']['ip']){
 		$destroy = true;
@@ -16,16 +17,13 @@ if($has_session){
 		$destroy = true;	
 	}
 	if($_SESSION['login']["valid"] !== true){
-		$destroy = true;	
-	}
-	if(!($_SESSION['token'] === $_GET['token'])){
-		die("Error - CSRF");
+		$destroy = true;
 	}
 	if($destroy===true){
 		session_destroy();
 	}
 	// Reset our counter
-	$_SESSION['login']['born'] = time();
+	$_SESSION['login']['born'] = time();	
 
 	// Get Profile data
 	if($stmt = $mysqli->prepare("SELECT * from profiles where user_id=?")){
